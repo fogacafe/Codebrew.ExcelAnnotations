@@ -1,0 +1,31 @@
+name: Build and Publish NuGet
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout código
+      uses: actions/checkout@v4
+
+    - name: Instala .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: '8.0.x'  # ou a versão desejada
+
+    - name: Restaura dependências
+      run: dotnet restore Codebrew.ExcelAnnotations/Codebrew.ExcelAnnotations.sln
+
+    - name: Compila o projeto
+      run: dotnet build Codebrew.ExcelAnnotations/Codebrew.ExcelAnnotations.sln --configuration Release --no-restore
+
+    - name: Empacota o projeto
+      run: dotnet pack Codebrew.ExcelAnnotations/Codebrew.ExcelAnnotations.sln --configuration Release --no-build -o ./nupkg
+
+    - name: Publica no NuGet
+      run: dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
