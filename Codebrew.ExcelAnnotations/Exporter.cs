@@ -44,7 +44,22 @@ namespace Codebrew.ExcelAnnotations
             {
                 for (int index = 0; index < props.Count; index++)
                 {
-                    worksheet.Cell(row, index + 1).Value = props[index].GetValue(item).ToString();
+                    var value = props[index].GetValue(item);
+                    worksheet.Cell(row, index + 1).Value = value switch
+                    {
+                        null => Blank.Value,
+                        string s => s,
+                        int i => i,
+                        long l => l,
+                        short s => s,
+                        float f => f,
+                        double d => d,
+                        decimal m => (double)m,
+                        DateTime dt => dt,
+                        bool b => b,
+                        TimeSpan ts => ts,
+                        _ => value.ToString()
+                    };
                 }
                 row++;
             }
