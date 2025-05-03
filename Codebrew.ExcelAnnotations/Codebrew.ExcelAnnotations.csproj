@@ -12,7 +12,12 @@
 	<PackageTags>excel closedxml attributes mapping export import</PackageTags>
 	<RepositoryUrl>https://github.com/fogacafe/Codebrew.ExcelAnnotations</RepositoryUrl>
 	<PackageLicenseExpression>MIT</PackageLicenseExpression>
+	<ApplicationIcon>Assets\icon.png</ApplicationIcon>
   </PropertyGroup>
+
+  <ItemGroup>
+	<None Include="Assets/icon.png" Pack="true" PackagePath="Assets\" />
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="ClosedXML" Version="0.104.2" />
