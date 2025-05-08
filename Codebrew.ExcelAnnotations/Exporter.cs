@@ -1,5 +1,7 @@
 ﻿using ClosedXML.Excel;
 using Codebrew.ExcelAnnotations.Attributes;
+using Codebrew.ExcelAnnotations.Attributes.Converters;
+using DocumentFormat.OpenXml.Spreadsheet;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -21,7 +23,7 @@ namespace Codebrew.ExcelAnnotations
 
             MapHeader(worksheet, data, props);
             MapRows(worksheet, data, props);
-            
+
             var memoryStream = new MemoryStream();
             workbook.SaveAs(memoryStream);
 
@@ -33,7 +35,7 @@ namespace Codebrew.ExcelAnnotations
             for (var index = 0; index < props.Count; index++)
             {
                 var columnAttibute = props[index].GetCustomAttribute<ExcelColumnAttribute>();
-                worksheet.Cell(1, index + 1).Value = columnAttibute.ColumnName;
+                worksheet.Cell(1, index + 1).Value = columnAttibute.Name;
             }
         }
 
@@ -44,23 +46,13 @@ namespace Codebrew.ExcelAnnotations
             {
                 for (int index = 0; index < props.Count; index++)
                 {
-                    var value = props[index].GetValue(item);
-                    worksheet.Cell(row, index + 1).Value = value switch
-                    {
-                        null => Blank.Value,
-                        string s => s,
-                        int i => i,
-                        long l => l,
-                        short s => s,
-                        float f => f,
-                        double d => d,
-                        decimal m => (double)m,
-                        DateTime dt => dt,
-                        bool b => b,
-                        TimeSpan ts => ts,
-                        _ => value.ToString()
-                    };
+                    var prop = props[index];
+                    var value = prop.GetValue(item);
+                    var propertyType = prop.PropertyType;
+
+                    
                 }
+
                 row++;
             }
         }
@@ -74,8 +66,8 @@ namespace Codebrew.ExcelAnnotations
 
         private static string GetSheetName(Type type)
         {
-            var sheetAttribute = type.GetCustomAttribute<ExcelSheetAttribute>();
-            return sheetAttribute?.SheetName ?? "Sheet1";
+            var sheetAttribute = type.GetCustomAttribute<SheetNameAttribute>();
+            return sheetAttribute?.Name ?? "Sheet1";
         }
     }
 }
