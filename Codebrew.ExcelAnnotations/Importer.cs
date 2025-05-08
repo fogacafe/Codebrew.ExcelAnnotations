@@ -48,7 +48,8 @@ namespace Codebrew.ExcelAnnotations
                     if (!headers.TryGetValue(property.Name, out int columnIndex))
                         continue;
 
-                    property.TrySetValue(item, row.Cell(columnIndex).Value);
+                    if (!property.TrySetValue(item, row.Cell(columnIndex).Value, out var ex) && options.ThrowWhenHasErrorToMap)
+                        throw new Exception($"Error to map property '{property.Name}'. See the inner excepton for details", ex);
                 }
 
                 items.Add(item);

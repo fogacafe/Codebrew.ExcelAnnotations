@@ -1,18 +1,23 @@
-﻿using System.Reflection;
+﻿using System;
+using System.Reflection;
 
 namespace Codebrew.ExcelAnnotations.Extensions
 {
     public static class PropertyExtensions
     {
-        public static bool TrySetValue(this PropertyInfo property, object obj, object value)
+        public static bool TrySetValue(this PropertyInfo property, object obj, object value, out Exception? exception)
         {
+            
+
             try
             {
-                property.SetValue(obj, value);
+                exception = null;
+                property.SetValue(obj, value);    
                 return true;
             }
-            catch
+            catch(Exception ex)
             {
+                exception = ex;
                 return false;
             }
         }
