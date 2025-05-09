@@ -5,38 +5,26 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 
 namespace Codebrew.ExcelAnnotations
 {
-    public class Importer : IDisposable
+    public class Importer : SpreadsheetBase
     {
 
-        private readonly XLWorkbook _workbook;
+        public Importer(IXLWorkbook workbook) : base(workbook) { }
+        
+        public Importer(Stream stream) : base(new XLWorkbook(stream)) { }
 
-        public Importer(XLWorkbook workbook)
-        {
-            _workbook = workbook;
-        }
+        public Importer(string path) : base(new XLWorkbook(path)) { }
 
-        public Importer(Stream stream)
-        {
-            _workbook = new XLWorkbook(stream);
-        }
-
-        public Importer(string path)
-        {
-            _workbook = new XLWorkbook(path);
-        }
-
-        public IEnumerable<T> Import<T>(ImporterOptions options) where T : new()
+        public IEnumerable<T> Import<T>(SpreadsheetOptions options) where T : new()
         {
             var worksheetName = GetWorksheetName(typeof(T), options);
             var worksheet = GetWorksheet(worksheetName);
 
             var headers = MapHeaders(worksheet, options.RowHeaderNumber);
-            
-            var properties = GetProperties<ExcelColumnAttribute>(typeof(T));
+
+            var properties = GetProperties<ColumnNameAttribute>(typeof(T));
             var items = new List<T>();
 
             foreach (var row in worksheet.RowsUsed().Skip(options.RowHeaderNumber))
@@ -73,25 +61,6 @@ namespace Codebrew.ExcelAnnotations
             return headers;
         }
 
-        private static List<PropertyInfo> GetProperties<T>(Type type) where T : Attribute
-        {
-            return type.GetProperties()
-                .Where(p => p.GetCustomAttribute<T>() != null)
-                .ToList();
-        }
-
-        private static string GetWorksheetName(Type type, ImporterOptions options)
-        {
-            if (!string.IsNullOrWhiteSpace(options.SheetName))
-                return options.SheetName;
-
-            var property = type.GetCustomAttribute<SheetNameAttribute>();
-
-            return property == null
-                ? throw new ArgumentException($"Shoud use {nameof(ImporterOptions)} or {nameof(SheetNameAttribute)} for set the worksheet name")
-                : property.Name;
-        }
-
         private IXLWorksheet GetWorksheet(string worksheetName)
         {
             var worksheet = _workbook.Worksheets
@@ -102,11 +71,6 @@ namespace Codebrew.ExcelAnnotations
                 throw new NullReferenceException($"Sheet with name {worksheetName} was not found");
 
             return worksheet;
-        }
-
-        public void Dispose()
-        {
-            _workbook?.Dispose();
         }
     }
 }

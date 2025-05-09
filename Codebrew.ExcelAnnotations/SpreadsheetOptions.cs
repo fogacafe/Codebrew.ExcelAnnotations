@@ -1,6 +1,6 @@
 ﻿namespace Codebrew.ExcelAnnotations
 {
-    public class ImporterOptions
+    public class SpreadsheetOptions
     {
         /// <summary>
         /// SheetName
