@@ -4,15 +4,14 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text;
 
-namespace Codebrew.ExcelAnnotations
+namespace Codebrew.ExcelAnnotations.Engine
 {
-    public abstract class SpreadsheetBase : IDisposable
+    public abstract class EngineBase
     {
         protected readonly IXLWorkbook _workbook;
 
-        protected SpreadsheetBase(IXLWorkbook workbook)
+        protected EngineBase(IXLWorkbook workbook)
         {
             _workbook = workbook;
         }
@@ -22,15 +21,15 @@ namespace Codebrew.ExcelAnnotations
             _workbook?.Dispose();
         }
 
-        protected static string GetWorksheetName(Type type, SpreadsheetOptions options)
+        protected static string GetWorksheetName(Type type, WorksheetOptions options)
         {
-            if (!string.IsNullOrWhiteSpace(options.SheetName))
-                return options.SheetName;
+            if (!string.IsNullOrWhiteSpace(options.WorksheetName))
+                return options.WorksheetName;
 
-            var property = type.GetCustomAttribute<SheetNameAttribute>();
+            var property = type.GetCustomAttribute<WorksheetNameAttribute>();
 
             return property == null
-                ? throw new ArgumentException($"Shoud use {nameof(SpreadsheetOptions)} or {nameof(SheetNameAttribute)} for set the worksheet name")
+                ? throw new ArgumentException($"Shoud use {nameof(WorksheetOptions)} or {nameof(WorksheetNameAttribute)} for set the worksheet name")
                 : property.Name;
         }
 

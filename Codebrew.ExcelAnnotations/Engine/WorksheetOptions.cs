@@ -1,12 +1,12 @@
-﻿namespace Codebrew.ExcelAnnotations
+﻿namespace Codebrew.ExcelAnnotations.Engine
 {
-    public class SpreadsheetOptions
+    public class WorksheetOptions
     {
         /// <summary>
-        /// SheetName
+        /// WorksheetName
         /// if empty, use the SheetNameAttribute
         /// </summary>
-        public string SheetName { get; set; } = string.Empty;
+        public string WorksheetName { get; set; } = string.Empty;
 
         /// <summary>
         /// RowHeaderNumber

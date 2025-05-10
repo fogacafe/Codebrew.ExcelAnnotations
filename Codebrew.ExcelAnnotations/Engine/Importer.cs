@@ -1,30 +1,31 @@
 ﻿using ClosedXML.Excel;
 using Codebrew.ExcelAnnotations.Attributes;
+using Codebrew.ExcelAnnotations.Engine.Interfaces;
 using Codebrew.ExcelAnnotations.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace Codebrew.ExcelAnnotations
+namespace Codebrew.ExcelAnnotations.Engine
 {
-    public class Importer : SpreadsheetBase
+    public class Importer : EngineBase, IImporter
     {
 
         public Importer(IXLWorkbook workbook) : base(workbook) { }
-        
+
         public Importer(Stream stream) : base(new XLWorkbook(stream)) { }
 
         public Importer(string path) : base(new XLWorkbook(path)) { }
 
-        public IEnumerable<T> Import<T>(SpreadsheetOptions options) where T : new()
+        public IEnumerable<T> Import<T>(WorksheetOptions options) where T : new()
         {
             var worksheetName = GetWorksheetName(typeof(T), options);
             var worksheet = GetWorksheet(worksheetName);
 
             var headers = MapHeaders(worksheet, options.RowHeaderNumber);
 
-            var properties = GetProperties<ColumnNameAttribute>(typeof(T));
+            var properties = GetProperties<HeaderAttribute>(typeof(T));
             var items = new List<T>();
 
             foreach (var row in worksheet.RowsUsed().Skip(options.RowHeaderNumber))

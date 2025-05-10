@@ -1,11 +1,12 @@
-﻿using Codebrew.ExcelAnnotations.Attributes.Base;
+﻿using ClosedXML.Excel;
+using Codebrew.ExcelAnnotations.Attributes.Interfaces;
 using System;
 using System.Globalization;
 
 namespace Codebrew.ExcelAnnotations.Attributes.Converters
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public class PercentageConverterAttribute : BaseAttribute
+    public class PercentageConverterAttribute : BaseAttribute, IConvertCellValue, IStyleCell
     {
         private readonly CultureInfo _culture;
         public PercentageConverterAttribute(string culture) : base()
@@ -18,23 +19,23 @@ namespace Codebrew.ExcelAnnotations.Attributes.Converters
             _culture = new CultureInfo("en-US");
         }
 
-        public decimal? Convert(string value)
+        public void SetStyle(IXLStyle style)
         {
-            if(string.IsNullOrWhiteSpace(value)) return null;
+            style.NumberFormat.Format = "0.00%";
+        }
 
-            bool isPercentageformat = false;
-            if (value.Contains("%"))
-            {
-                value = value.Replace("%", "");
-                isPercentageformat = true;
-            }
+        public XLCellValue ToCellValue(object? value)
+        {
+            decimal? percentage = (decimal?)value;
+            return percentage is null ? null : percentage / 100;
+        }
 
-            value = value.Trim();
+        public object? FromCellValue(IXLCell cell)
+        {
+            if (cell.TryGetValue<decimal?>(out var value) && value != null)
+                return value * 100;
 
-            if(decimal.TryParse(value, NumberStyles.Any, _culture, out decimal percentage))
-                return isPercentageformat ? percentage : percentage * 100;
-
-            return 0;
+            return null;
         }
     }
 }

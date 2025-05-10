@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace Codebrew.ExcelAnnotations.Attributes.Base
+namespace Codebrew.ExcelAnnotations.Attributes
 {
     public abstract class BaseAttribute : Attribute
     {
@@ -10,7 +10,7 @@ namespace Codebrew.ExcelAnnotations.Attributes.Base
             IgnoreCase = ignoreCase;
         }
 
-        protected StringComparer StringComparer 
+        protected StringComparer StringComparer
             => IgnoreCase ? StringComparer.OrdinalIgnoreCase : StringComparer.Ordinal;
 
         protected StringComparison StringComparison

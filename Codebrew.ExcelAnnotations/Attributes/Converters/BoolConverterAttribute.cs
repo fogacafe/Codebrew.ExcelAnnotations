@@ -1,18 +1,18 @@
-﻿using Codebrew.ExcelAnnotations.Attributes.Base;
+﻿using ClosedXML.Excel;
+using Codebrew.ExcelAnnotations.Attributes.Interfaces;
 using System;
 using System.Linq;
 
 namespace Codebrew.ExcelAnnotations.Attributes.Converters
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public class BoolConverterAttribute : BaseAttribute
+    public class BoolConverterAttribute : BaseAttribute, IConvertCellValue
     {
         public string[] TrueValues { get; }
         public string[] FalseValues { get; }
         
         public BoolConverterAttribute(string[] trueValues,
-                                      string[] falseValues,
-                                      bool ignoreCase = true) : base(ignoreCase)
+                                      string[] falseValues) : base()
         {
             ValidateArray(trueValues, nameof(trueValues));
             ValidateArray(falseValues, nameof(falseValues));
@@ -24,21 +24,26 @@ namespace Codebrew.ExcelAnnotations.Attributes.Converters
         public string TrueValue => TrueValues[0];
         public string FalseValue => FalseValues[0];
 
-        public bool Convert(string value)
-        {
-            return !string.IsNullOrWhiteSpace(value) 
-                && TrueValues.Contains(value, StringComparer);
-        }
-
-        public string Convert(bool value)
-        {
-            return value ? TrueValue : FalseValue;
-        }
-
         private void ValidateArray(string[] arr, string propertyName)
         {
             if (arr is null || arr.Length == 0 || arr.All(x => string.IsNullOrWhiteSpace(x)))
                 throw new ArgumentException($"{propertyName} must have a value.", propertyName);
+        }
+
+        public XLCellValue ToCellValue(object? value)
+        {
+            if (value is null)
+                return Blank.Value;
+
+            return (bool)value ? TrueValue :FalseValue;
+        }
+
+        public object? FromCellValue(IXLCell cell)
+        {
+            if (cell.TryGetValue<string>(out var text) && !string.IsNullOrWhiteSpace(text))
+                return TrueValues.Contains(text, StringComparer);
+            
+            return null;
         }
     }
 }
