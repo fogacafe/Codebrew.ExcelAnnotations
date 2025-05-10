@@ -2,8 +2,8 @@
 
 namespace Codebrew.ExcelAnnotations.Attributes.Interfaces
 {
-    public interface IStyleCell
+    public interface IStyler
     {
-        void SetStyle(IXLStyle style);
+        void ApplyStyle(IXLStyle style);
     }
 }

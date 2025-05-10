@@ -4,6 +4,7 @@
     {
         public const string Background_White = "#FFFFFF";
         public const string Text_Black = "#000000";
+        public const string Text_White = "#FFFFFF";
 
         public const string AltBackground_Beige = "#EEECE1";
         public const string AltText_BlueDark = "#1F497D";

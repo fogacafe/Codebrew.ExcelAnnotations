@@ -1,5 +1,4 @@
-﻿using ClosedXML.Excel;
-using Codebrew.ExcelAnnotations.Attributes;
+﻿using Codebrew.ExcelAnnotations.Attributes;
 using Codebrew.ExcelAnnotations.Attributes.Converters;
 
 namespace Codebrew.ExcelAnnotations.Example.Worksheets

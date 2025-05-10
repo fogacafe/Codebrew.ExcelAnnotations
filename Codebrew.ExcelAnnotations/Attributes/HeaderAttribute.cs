@@ -1,32 +1,32 @@
 ﻿using ClosedXML.Excel;
+using Codebrew.ExcelAnnotations.Attributes.Interfaces;
+using Codebrew.ExcelAnnotations.Attributes.Theme;
 using System;
 
 namespace Codebrew.ExcelAnnotations.Attributes
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public class HeaderAttribute : BaseAttribute
+    public class HeaderAttribute : BaseAttribute, IHeaderAttribute
     {
         public string Name { get; }
-        public bool Bold { get; }
-        public XLColor? BackColor { get; }
-        public XLColor? FontColor { get; }
-        public HeaderAttribute(string name, string? backColorHex = "#1d1f1e", string? fontColorHex = "#fcfcfc", bool bold = true) : base()
+        public ITheme? Theme { get; }
+        
+        public HeaderAttribute(string name, Type? themeType = null) : base()
         {
+            if(string.IsNullOrWhiteSpace(name))
+                throw new ArgumentNullException($"{nameof(name)} shound be not empty", nameof(Name));
+
             Name = name;
-            BackColor = backColorHex != null ? XLColor.FromHtml(backColorHex) : null;
-            FontColor = fontColorHex != null ? XLColor.FromHtml(fontColorHex) : null;
-            Bold = bold;
+
+            if (themeType is not null)
+                Theme = Activator.CreateInstance(themeType) as ITheme;
+            
+            Theme ??= HeaderTheme.Instance;
         }
 
-        public void SetStyle(IXLStyle style)
+        public void ApplyStyle(IXLStyle style)
         {
-            style.Font.Bold = Bold;
-
-            if (FontColor != null)
-                style.Font.FontColor = FontColor;
-
-            if (BackColor != null)
-                style.Fill.BackgroundColor = BackColor;
+            Theme?.Apply(style);
         }
     }
 }

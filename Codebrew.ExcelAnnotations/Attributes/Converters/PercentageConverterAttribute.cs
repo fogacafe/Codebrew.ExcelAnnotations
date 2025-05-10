@@ -6,7 +6,7 @@ using System.Globalization;
 namespace Codebrew.ExcelAnnotations.Attributes.Converters
 {
     [AttributeUsage(AttributeTargets.Property)]
-    public class PercentageConverterAttribute : BaseAttribute, IConvertCellValue, IStyleCell
+    public class PercentageConverterAttribute : BaseAttribute, IConvertCellValue, IStylerCell
     {
         private readonly CultureInfo _culture;
         public PercentageConverterAttribute(string culture) : base()
@@ -19,7 +19,7 @@ namespace Codebrew.ExcelAnnotations.Attributes.Converters
             _culture = new CultureInfo("en-US");
         }
 
-        public void SetStyle(IXLStyle style)
+        public void Apply(IXLStyle style)
         {
             style.NumberFormat.Format = "0.00%";
         }

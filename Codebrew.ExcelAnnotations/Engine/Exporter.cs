@@ -31,10 +31,12 @@ namespace Codebrew.ExcelAnnotations.Engine
                     .FirstOrDefault();
 
                 var styler = property.GetCustomAttributes<BaseAttribute>(true)
-                    .OfType<IStyleCell>()
+                    .OfType<IStylerCell>()
                     .FirstOrDefault();
 
-                var column = property.GetCustomAttribute<HeaderAttribute>();
+                var column = property.GetCustomAttributes<BaseAttribute>(true)
+                    .OfType<IHeaderAttribute>()
+                    .FirstOrDefault();
 
                 return new
                 {
@@ -60,7 +62,7 @@ namespace Codebrew.ExcelAnnotations.Engine
                         ? config.Converter.ToCellValue(value)
                         : cell.Value = ConvertToXLCellValue(value);
 
-                    config.Styler?.SetStyle(cell.Style);
+                    config.Styler?.Apply(cell.Style);
                 }
             }
 
@@ -69,7 +71,7 @@ namespace Codebrew.ExcelAnnotations.Engine
             {
                 var cell = headerRow.Cell(propConfig.Index + 1);
                 cell.Value = propConfig.Column.Name;
-                propConfig.Column.SetStyle(cell.Style);
+                propConfig.Column.ApplyStyle(cell.Style);
 
                 worksheet.Column(propConfig.Index + 1).AdjustToContents();
             }
