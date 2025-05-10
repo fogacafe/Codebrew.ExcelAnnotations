@@ -7,8 +7,6 @@ namespace Codebrew.ExcelAnnotations.Extensions
     {
         public static bool TrySetValue(this PropertyInfo property, object obj, object value, out Exception? exception)
         {
-            
-
             try
             {
                 exception = null;
