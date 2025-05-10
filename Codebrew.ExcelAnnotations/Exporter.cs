@@ -1,7 +1,11 @@
 ﻿using ClosedXML.Excel;
 using Codebrew.ExcelAnnotations.Attributes;
+using Codebrew.ExcelAnnotations.Attributes.Base;
+using Codebrew.ExcelAnnotations.Attributes.Converters;
+using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 
 namespace Codebrew.ExcelAnnotations
@@ -20,19 +24,58 @@ namespace Codebrew.ExcelAnnotations
 
             var properties = GetProperties<ColumnNameAttribute>(typeof(T));
 
+            var propConfigs = properties.Select((property, index) =>
+            {
+                var converter = property.GetCustomAttributes<BaseAttribute>(true)
+                    .OfType<IConvertToCell>()
+                    .FirstOrDefault();
 
+                var columnName = property.GetCustomAttribute<ColumnNameAttribute>().Name;
 
-            var rowNumber = options.RowHeaderNumber + 1;
+                return new
+                {
+                    Index = index,
+                    Converter = converter,
+                    ColumnName = columnName,
+                    Property = property
+                };
+            }).ToList();
+
+            var rowNumber = options.RowHeaderNumber;
             foreach (var item in items)
             {
-                var row = worksheet.Row(rowNumber);
+                var row = worksheet.Row(rowNumber++);
 
-                for (int index = 1; index <= properties.Count; index++)
+                foreach (var config in propConfigs)
                 {
-                    var columnAtt = properties[index].GetCustomAttribute<ColumnNameAttribute>();
-                    row.Cell(index + 1).Value = properties[index].GetValue(item, null)?.ToString();
+                    var value = config.Property.GetValue(item, null);
+                    var cell = row.Cell(config.Index + 1);
+
+                    cell.Value = config.Converter != null
+                        ? config.Converter.ToXLCellValue(value)
+                        : cell.Value = ConvertToXLCellValue(value);
                 }
             }
+        }
+
+        protected XLCellValue ConvertToXLCellValue(object? value)
+        {
+            return value switch
+            {
+                null => Blank.Value,
+                string s => s,
+                double d => d,
+                float f => f,
+                int i => i,
+                long l => l,
+                decimal dec => dec,
+                bool b => b ? "Yes" : "No",
+                DateTime dt => dt,
+                TimeSpan ts => ts,
+                Enum e => e.ToString(),
+                Guid g => g.ToString(),
+                _ => value?.ToString() ?? string.Empty
+            };
         }
 
         public Stream ExportToStream()
