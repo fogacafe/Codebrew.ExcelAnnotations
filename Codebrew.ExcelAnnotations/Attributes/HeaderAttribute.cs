@@ -1,4 +1,5 @@
 ﻿using ClosedXML.Excel;
+using Codebrew.ExcelAnnotations.Attributes.Helpers;
 using Codebrew.ExcelAnnotations.Attributes.Interfaces;
 using Codebrew.ExcelAnnotations.Attributes.Theme;
 using System;
@@ -14,14 +15,14 @@ namespace Codebrew.ExcelAnnotations.Attributes
         public HeaderAttribute(string name, Type? themeType = null) : base()
         {
             if(string.IsNullOrWhiteSpace(name))
-                throw new ArgumentNullException($"{nameof(name)} shound be not empty", nameof(Name));
+                throw new ArgumentNullException($"{nameof(name)} should not be empty", nameof(Name));
 
             Name = name;
 
             if (themeType is not null)
-                Theme = Activator.CreateInstance(themeType) as ITheme;
+                Theme = ThemeHelper.GetTheme(themeType);
             
-            Theme ??= HeaderTheme.Instance;
+            Theme ??= ThemeHelper.GetTheme<HeaderTheme>();
         }
 
         public void ApplyStyle(IXLStyle style)

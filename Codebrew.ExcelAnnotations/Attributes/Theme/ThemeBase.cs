@@ -14,16 +14,6 @@ namespace Codebrew.ExcelAnnotations.Attributes.Theme
         public string FontColor { get; protected set; }
         public string BackgroundColor { get; protected set; }
 
-        private static ITheme? _instance;
-        public static ITheme Instance
-        {
-            get
-            {
-                _instance ??= new T();
-                return _instance;
-            }
-        }
-
         protected ThemeBase()
         {
             FontBold = false;
