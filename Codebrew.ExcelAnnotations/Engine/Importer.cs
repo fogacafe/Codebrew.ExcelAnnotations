@@ -1,11 +1,13 @@
 ﻿using ClosedXML.Excel;
 using Codebrew.ExcelAnnotations.Attributes;
+using Codebrew.ExcelAnnotations.Attributes.Interfaces;
 using Codebrew.ExcelAnnotations.Engine.Interfaces;
 using Codebrew.ExcelAnnotations.Extensions;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace Codebrew.ExcelAnnotations.Engine
 {
@@ -26,19 +28,49 @@ namespace Codebrew.ExcelAnnotations.Engine
             var headers = MapHeaders(worksheet, options.RowHeaderNumber);
 
             var properties = GetProperties<HeaderAttribute>(typeof(T));
+
+            var propConfigs = properties.Select((property, index) =>
+            {
+                var converter = property.GetCustomAttributes<BaseAttribute>(true)
+                    .OfType<IConvertCellValue>()
+                    .FirstOrDefault();
+
+                var column = property.GetCustomAttributes<BaseAttribute>(true)
+                    .OfType<IHeaderAttribute>()
+                    .FirstOrDefault();
+
+                return new
+                {
+                    Index = index,
+                    Converter = converter,
+                    Column = column,
+                    Property = property
+                };
+
+            }).ToList();
+
+
             var items = new List<T>();
 
             foreach (var row in worksheet.RowsUsed().Skip(options.RowHeaderNumber))
             {
                 var item = new T();
 
-                foreach (var property in properties)
+                foreach(var config in propConfigs)
                 {
-                    if (!headers.TryGetValue(property.Name, out int columnIndex))
+                    if (!headers.TryGetValue(config.Column.Name, out var columnIndex))
                         continue;
 
-                    if (!property.TrySetValue(item, row.Cell(columnIndex).Value, out var ex) && options.ThrowWhenHasErrorToMap)
-                        throw new Exception($"Error to map property '{property.Name}'. See the inner excepton for details", ex);
+                    Exception? ex = null;
+
+                    if (config.Converter != null)
+                        config.Property.TrySetValue(item, config.Converter.ToCellValue(row.Cell(columnIndex).Value), out ex);
+                    else
+                        config.Property.TrySetValue(item, row.Cell(columnIndex).Value, out ex);
+
+                    if (ex != null && options.ThrowWhenHasErrorToMap)
+                        throw new Exception($"Error to map property '{config.Property.Name}'. See the inner excepton for details", ex);
+
                 }
 
                 items.Add(item);
