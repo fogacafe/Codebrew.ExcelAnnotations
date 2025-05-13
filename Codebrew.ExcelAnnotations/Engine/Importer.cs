@@ -64,7 +64,7 @@ namespace Codebrew.ExcelAnnotations.Engine
                     Exception? ex = null;
 
                     if (config.Converter != null)
-                        config.Property.TrySetValue(item, config.Converter.ToCellValue(row.Cell(columnIndex).Value), out ex);
+                        config.Property.TrySetValue(item, config.Converter.FromCellValue(row.Cell(columnIndex)), out ex);
                     else
                         config.Property.TrySetValue(item, row.Cell(columnIndex).Value, out ex);
 

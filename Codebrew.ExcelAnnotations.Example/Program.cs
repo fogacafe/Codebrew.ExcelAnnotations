@@ -53,7 +53,7 @@ static void Export<T>(IEnumerable<T> items)
     using (var exporter = new Exporter())
     {
         exporter.MapToWorksheet(items, new WorksheetOptions());
-        exporter.MapToWorksheet(items, new WorksheetOptions() { WorksheetName = "Books25" });
+        exporter.MapToWorksheet(items, new WorksheetOptions() { WorksheetName = "Compare with exported" });
         exporter.ExportToPath("excel.xlsx");
     }
 }
