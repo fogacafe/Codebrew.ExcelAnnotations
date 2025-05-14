@@ -2,6 +2,7 @@
 using Codebrew.ExcelAnnotations.Attributes;
 using Codebrew.ExcelAnnotations.Attributes.Interfaces;
 using Codebrew.ExcelAnnotations.Engine.Interfaces;
+using Codebrew.ExcelAnnotations.Exceptions;
 using Codebrew.ExcelAnnotations.Extensions;
 using System;
 using System.Collections.Generic;
@@ -26,50 +27,37 @@ namespace Codebrew.ExcelAnnotations.Engine
             var worksheet = GetWorksheet(worksheetName);
 
             var headers = MapHeaders(worksheet, options.RowHeaderNumber);
-
-            var properties = GetProperties<HeaderAttribute>(typeof(T));
-
-            var propConfigs = properties.Select((property, index) =>
-            {
-                var converter = property.GetCustomAttributes<BaseAttribute>(true)
-                    .OfType<IConvertCellValue>()
-                    .FirstOrDefault();
-
-                var column = property.GetCustomAttributes<BaseAttribute>(true)
-                    .OfType<IHeaderAttribute>()
-                    .FirstOrDefault();
-
-                return new
-                {
-                    Index = index,
-                    Converter = converter,
-                    Column = column,
-                    Property = property
-                };
-
-            }).ToList();
-
+            var propConfigs = MapPropertiesConfig<T>();
 
             var items = new List<T>();
+            var rows = worksheet.RowsUsed().Skip(options.RowHeaderNumber);
 
-            foreach (var row in worksheet.RowsUsed().Skip(options.RowHeaderNumber))
+            foreach (var row in rows)
             {
                 var item = new T();
 
                 foreach(var config in propConfigs)
                 {
-                    if (!headers.TryGetValue(config.Column.Name, out var columnIndex))
+                    if (!headers.TryGetValue(config.Header.Name, out var columnIndex))
                         continue;
 
                     Exception? ex = null;
 
+                    var cell = row.Cell(columnIndex);
+
                     if (config.Converter != null)
-                        config.Property.TrySetValue(item, config.Converter.FromCellValue(row.Cell(columnIndex)), out ex);
+                        config.Property.TrySetValue(item, config.Converter.FromCellValue(cell), out ex);
                     else
-                        config.Property.TrySetValue(item, row.Cell(columnIndex).Value, out ex);
+                        config.Property.TrySetValue(item, cell.Value, out ex);
 
                     if (ex != null && options.ThrowWhenHasErrorToMap)
-                        throw new Exception($"Error to map property '{config.Property.Name}'. See the inner excepton for details", ex);
+                    {
+                        throw new SetPropertyValueException($"Error to map property '{config.Property.Name} at column '{config.Header.Name}'. See the inner excepton for details", 
+                            config.Property.Name, 
+                            config.Header.Name, 
+                            ex);
+                    }
+                        
 
                 }
 
@@ -88,7 +76,8 @@ namespace Codebrew.ExcelAnnotations.Engine
                 .Where(x => x.RowNumber() == rowHeaderNumber)
                 .FirstOrDefault();
 
-            foreach (var cell in rowHeader.CellsUsed())
+            var cellsUsed = rowHeader.CellsUsed();
+            foreach (var cell in cellsUsed)
                 headers.Add(cell.GetString(), cell.Address.ColumnNumber);
 
             return headers;
@@ -101,9 +90,37 @@ namespace Codebrew.ExcelAnnotations.Engine
                 .FirstOrDefault();
 
             if (worksheet == null)
-                throw new NullReferenceException($"Sheet with name {worksheetName} was not found");
+                throw new WorksheetNotFoundException($"Worksheet with name {worksheetName} was not found", worksheetName);
 
             return worksheet;
+        }
+
+        private List<PropertyMapConfig> MapPropertiesConfig<T>()
+        {
+            List<PropertyMapConfig> propConfigs = typeof(T).GetProperties()
+                .Select((property, index) =>
+                {
+                    var header = property.GetCustomAttributes<BaseAttribute>(true)
+                        .OfType<IHeaderAttribute>()
+                        .FirstOrDefault();
+
+                    if (header is null)
+                        return null;
+
+                    var converter = property.GetCustomAttributes<BaseAttribute>(true)
+                    .OfType<IConvertCellValue>()
+                    .FirstOrDefault();
+
+                    return new PropertyMapConfig(
+                        index,
+                        property,
+                        converter,
+                        header
+                    );
+                }).Where(x => x != null)
+                .ToList()!;
+
+            return propConfigs;
         }
     }
 }
