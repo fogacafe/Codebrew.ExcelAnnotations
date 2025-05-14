@@ -1,5 +1,6 @@
 ﻿using ClosedXML.Excel;
 using Codebrew.ExcelAnnotations.Attributes;
+using Codebrew.ExcelAnnotations.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -29,7 +30,7 @@ namespace Codebrew.ExcelAnnotations.Engine
             var property = type.GetCustomAttribute<WorksheetNameAttribute>();
 
             return property == null
-                ? throw new ArgumentException($"Shoud use {nameof(WorksheetOptions)} or {nameof(WorksheetNameAttribute)} for set the worksheet name")
+                ? throw new WorksheetNameNotInformedException($"Shoud use '{nameof(WorksheetOptions)}' or '{nameof(WorksheetNameAttribute)}' for set the worksheet name")
                 : property.Name;
         }
 
