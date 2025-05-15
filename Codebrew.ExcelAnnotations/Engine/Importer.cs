@@ -97,32 +97,6 @@ namespace Codebrew.ExcelAnnotations.Engine
             return worksheet;
         }
 
-        private List<PropertyMapConfig> MapPropertiesConfig<T>()
-        {
-            List<PropertyMapConfig> propConfigs = typeof(T).GetProperties()
-                .Select((property, index) =>
-                {
-                    var header = property.GetCustomAttributes<BaseAttribute>(true)
-                        .OfType<IHeaderAttribute>()
-                        .FirstOrDefault();
-
-                    if (header is null)
-                        return null;
-
-                    var converter = property.GetCustomAttributes<BaseAttribute>(true)
-                    .OfType<IConvertCellValue>()
-                    .FirstOrDefault();
-
-                    return new PropertyMapConfig(
-                        index,
-                        property,
-                        converter,
-                        header
-                    );
-                }).Where(x => x != null)
-                .ToList()!;
-
-            return propConfigs;
-        }
+        
     }
 }

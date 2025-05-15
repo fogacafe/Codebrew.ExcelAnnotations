@@ -1,12 +1,8 @@
 ﻿using ClosedXML.Excel;
-using Codebrew.ExcelAnnotations.Attributes;
-using Codebrew.ExcelAnnotations.Attributes.Interfaces;
 using Codebrew.ExcelAnnotations.Engine.Interfaces;
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
-using System.Reflection;
 
 namespace Codebrew.ExcelAnnotations.Engine
 {
@@ -24,33 +20,9 @@ namespace Codebrew.ExcelAnnotations.Engine
             var worksheetName = GetWorksheetName(typeof(T), options);
             var worksheet = _workbook.AddWorksheet(worksheetName);
 
-            var properties = GetProperties<HeaderAttribute>(typeof(T));
-
-            var propConfigs = properties.Select((property, index) =>
-            {
-                var converter = property.GetCustomAttributes<BaseAttribute>(true)
-                    .OfType<IConvertCellValue>()
-                    .FirstOrDefault();
-
-                var styler = property.GetCustomAttributes<BaseAttribute>(true)
-                    .OfType<IStylerCell>()
-                    .FirstOrDefault();
-
-                var column = property.GetCustomAttributes<BaseAttribute>(true)
-                    .OfType<IHeaderAttribute>()
-                    .FirstOrDefault();
-
-                return new
-                {
-                    Index = index,
-                    Converter = converter,
-                    Column = column,
-                    Property = property,
-                    Styler = styler
-                };
-            }).ToList();
-
+            var propConfigs = MapPropertiesConfig<T>();
             var rowNumber = options.RowHeaderNumber + 1;
+
             foreach (var item in items)
             {
                 var row = worksheet.Row(rowNumber++);
@@ -72,8 +44,8 @@ namespace Codebrew.ExcelAnnotations.Engine
             foreach (var propConfig in propConfigs)
             {
                 var cell = headerRow.Cell(propConfig.Index + 1);
-                cell.Value = propConfig.Column.Name;
-                propConfig.Column.ApplyStyle(cell.Style);
+                cell.Value = propConfig.Header.Name;
+                propConfig.Header.ApplyStyle(cell.Style);
 
                 worksheet.Column(propConfig.Index + 1).AdjustToContents();
             }

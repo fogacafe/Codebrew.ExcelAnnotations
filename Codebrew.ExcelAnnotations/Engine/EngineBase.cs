@@ -1,5 +1,6 @@
 ﻿using ClosedXML.Excel;
 using Codebrew.ExcelAnnotations.Attributes;
+using Codebrew.ExcelAnnotations.Attributes.Interfaces;
 using Codebrew.ExcelAnnotations.Exceptions;
 using System;
 using System.Collections.Generic;
@@ -34,11 +35,37 @@ namespace Codebrew.ExcelAnnotations.Engine
                 : property.Name;
         }
 
-        protected static List<PropertyInfo> GetProperties<T>(Type type) where T : Attribute
+        protected static List<PropertyMapConfig> MapPropertiesConfig<T>()
         {
-            return type.GetProperties()
-                .Where(p => p.GetCustomAttribute<T>() != null)
-                .ToList();
+            List<PropertyMapConfig> propConfigs = typeof(T).GetProperties()
+                .Select((property, index) =>
+                {
+                    var header = property.GetCustomAttributes<BaseAttribute>(true)
+                        .OfType<IHeaderAttribute>()
+                        .FirstOrDefault();
+
+                    if (header is null)
+                        return null;
+
+                    var converter = property.GetCustomAttributes<BaseAttribute>(true)
+                    .OfType<IConvertCellValue>()
+                    .FirstOrDefault();
+
+                    var styler = property.GetCustomAttributes<BaseAttribute>(true)
+                   .OfType<IStylerCell>()
+                   .FirstOrDefault();
+
+                    return new PropertyMapConfig(
+                        index,
+                        property,
+                        converter,
+                        header,
+                        styler
+                    );
+                }).Where(x => x != null)
+                .ToList()!;
+
+            return propConfigs;
         }
     }
 }
