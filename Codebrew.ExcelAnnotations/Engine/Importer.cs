@@ -18,7 +18,7 @@ namespace Codebrew.ExcelAnnotations.Engine
 
         public Importer(string path) : base(new XLWorkbook(path)) { }
 
-        public IEnumerable<T> Import<T>(WorksheetOptions? options) where T : new()
+        public IEnumerable<T> Import<T>(WorksheetOptions? options = null) where T : new()
         {
             options ??= new WorksheetOptions();
 

@@ -13,7 +13,7 @@ namespace Codebrew.ExcelAnnotations.Engine
         public Exporter(IXLWorkbook workbook) : base(workbook) { }
 
 
-        public void MapToWorksheet<T>(IEnumerable<T> items, WorksheetOptions? options)
+        public void MapToWorksheet<T>(IEnumerable<T> items, WorksheetOptions? options = null)
         {
             options ??= new WorksheetOptions();
 

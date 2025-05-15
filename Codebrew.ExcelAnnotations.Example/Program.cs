@@ -32,7 +32,7 @@ static List<T> Import<T>() where T : new()
 {
     using(var importer = new Importer("excel.xlsx"))
     {
-        return importer.Import<T>(new WorksheetOptions()).ToList();
+        return importer.Import<T>().ToList();
     }
 }
 
@@ -52,7 +52,7 @@ static void Export<T>(IEnumerable<T> items)
 {
     using (var exporter = new Exporter())
     {
-        exporter.MapToWorksheet(items, new WorksheetOptions());
+        exporter.MapToWorksheet(items);
         exporter.MapToWorksheet(items, new WorksheetOptions() { WorksheetName = "Compare with exported" });
         exporter.ExportToPath("excel.xlsx");
     }
