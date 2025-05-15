@@ -15,6 +15,9 @@ namespace Codebrew.ExcelAnnotations.Engine
 
         protected EngineBase(IXLWorkbook workbook)
         {
+            if (workbook is null)
+                throw new NullReferenceException($"{nameof(workbook)} is null");
+
             _workbook = workbook;
         }
 
