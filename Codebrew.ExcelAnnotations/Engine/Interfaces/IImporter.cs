@@ -5,6 +5,6 @@ namespace Codebrew.ExcelAnnotations.Engine.Interfaces
 {
     public interface IImporter : IDisposable
     {
-        IEnumerable<T> Import<T>(WorksheetOptions options) where T : new();
+        IEnumerable<T> Import<T>(WorksheetOptions? options = null) where T : new();
     }
 }

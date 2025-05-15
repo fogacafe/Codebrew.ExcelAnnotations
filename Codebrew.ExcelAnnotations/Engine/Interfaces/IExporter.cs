@@ -7,7 +7,7 @@ namespace Codebrew.ExcelAnnotations.Engine.Interfaces
 {
     public interface IExporter : IDisposable
     {
-        void MapToWorksheet<T>(IEnumerable<T> items, WorksheetOptions options);
+        void MapToWorksheet<T>(IEnumerable<T> items, WorksheetOptions? options = default);
         public Stream ExportToStream();
 
         public void ExportToPath(string path);

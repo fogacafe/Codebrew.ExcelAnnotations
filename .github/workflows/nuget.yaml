@@ -19,13 +19,13 @@ jobs:
         dotnet-version: '8.0.x'  # ou a versão desejada
 
     - name: Restaura dependências
-      run: dotnet restore Codebrew.ExcelAnnotations/Codebrew.ExcelAnnotations.sln
+      run: dotnet restore Codebrew.ExcelAnnotations/Codebrew.ExcelAnnotations.csproj
 
     - name: Compila o projeto
-      run: dotnet build Codebrew.ExcelAnnotations/Codebrew.ExcelAnnotations.sln --configuration Release --no-restore
+      run: dotnet build Codebrew.ExcelAnnotations/Codebrew.ExcelAnnotations.csproj --configuration Release --no-restore
 
     - name: Empacota o projeto
-      run: dotnet pack Codebrew.ExcelAnnotations/Codebrew.ExcelAnnotations.sln --configuration Release --no-build -o ./nupkg
+      run: dotnet pack Codebrew.ExcelAnnotations/Codebrew.ExcelAnnotations.csproj --configuration Release --no-build -o ./nupkg
 
     - name: Publica no NuGet
       run: dotnet nuget push ./nupkg/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json

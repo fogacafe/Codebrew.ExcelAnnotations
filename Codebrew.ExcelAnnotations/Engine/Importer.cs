@@ -1,6 +1,4 @@
 ﻿using ClosedXML.Excel;
-using Codebrew.ExcelAnnotations.Attributes;
-using Codebrew.ExcelAnnotations.Attributes.Interfaces;
 using Codebrew.ExcelAnnotations.Engine.Interfaces;
 using Codebrew.ExcelAnnotations.Exceptions;
 using Codebrew.ExcelAnnotations.Extensions;
@@ -8,7 +6,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 
 namespace Codebrew.ExcelAnnotations.Engine
 {
@@ -21,8 +18,10 @@ namespace Codebrew.ExcelAnnotations.Engine
 
         public Importer(string path) : base(new XLWorkbook(path)) { }
 
-        public IEnumerable<T> Import<T>(WorksheetOptions options) where T : new()
+        public IEnumerable<T> Import<T>(WorksheetOptions? options = null) where T : new()
         {
+            options ??= new WorksheetOptions();
+
             var worksheetName = GetWorksheetName(typeof(T), options);
             var worksheet = GetWorksheet(worksheetName);
 
@@ -95,32 +94,6 @@ namespace Codebrew.ExcelAnnotations.Engine
             return worksheet;
         }
 
-        private List<PropertyMapConfig> MapPropertiesConfig<T>()
-        {
-            List<PropertyMapConfig> propConfigs = typeof(T).GetProperties()
-                .Select((property, index) =>
-                {
-                    var header = property.GetCustomAttributes<BaseAttribute>(true)
-                        .OfType<IHeaderAttribute>()
-                        .FirstOrDefault();
-
-                    if (header is null)
-                        return null;
-
-                    var converter = property.GetCustomAttributes<BaseAttribute>(true)
-                    .OfType<IConvertCellValue>()
-                    .FirstOrDefault();
-
-                    return new PropertyMapConfig(
-                        index,
-                        property,
-                        converter,
-                        header
-                    );
-                }).Where(x => x != null)
-                .ToList()!;
-
-            return propConfigs;
-        }
+        
     }
 }
