@@ -17,8 +17,10 @@ namespace Codebrew.ExcelAnnotations.Engine
         public Exporter(IXLWorkbook workbook) : base(workbook) { }
 
 
-        public void MapToWorksheet<T>(IEnumerable<T> items, WorksheetOptions options)
+        public void MapToWorksheet<T>(IEnumerable<T> items, WorksheetOptions? options)
         {
+            options ??= new WorksheetOptions();
+
             var worksheetName = GetWorksheetName(typeof(T), options);
             var worksheet = _workbook.AddWorksheet(worksheetName);
 
